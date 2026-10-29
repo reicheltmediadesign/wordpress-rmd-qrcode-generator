@@ -2,7 +2,7 @@
 /**
  * Plugin Name: QR Code Generator
  * Description: WordPress-Plugin zur Generierung von QR-Codes (Link, Text, Termin, Girocode) mit Presets und Rollensteuerung
- * Version: 1.4.0
+ * Version: 1.5.0
  * Author: Philipp von reichelt media.design
  * Author URI: https://reicheltmedia.design
  * License: GPL-2.0-or-later
@@ -13,14 +13,14 @@ if (!defined('ABSPATH')) {
 }
 
 // Plugin-Konstanten definieren
-define('RMD_QR_VERSION', '1.4.0');
+define('RMD_QR_VERSION', '1.5.0');
 define('RMD_QR_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('RMD_QR_PLUGIN_PATH', plugin_dir_path(__FILE__));
 define('RMD_QR_OPTION', 'rmd_qr_settings');
 
 class RMDQRCodeGenerator {
 
-    private $presets;
+    private $presets = null;
 
     private $preset_types = array('link', 'text', 'event', 'girocode');
 
@@ -34,9 +34,6 @@ class RMDQRCodeGenerator {
         add_action('admin_init', array($this, 'create_upload_directory'));
         add_action('admin_notices', array($this, 'check_requirements'));
         add_action('init', array($this, 'handle_cleanup_actions'));
-        
-        // Presets laden
-        $this->load_presets();
     }
     
     /**
@@ -73,10 +70,15 @@ class RMDQRCodeGenerator {
     }
 
     /**
-     * Wandelt gespeicherte Presets in das Format für die Preset-Buttons um.
+     * Wandelt gespeicherte Presets in das Format für die Preset-Buttons um und löst Shortcodes auf.
+     * Erst bei Bedarf geladen, damit Theme-Filter und Shortcodes anderer Plugins registriert sind.
      * Über den Filter "rmd_qr_presets" lassen sich Presets per Code ergänzen.
      */
-    private function load_presets() {
+    private function get_presets() {
+        if ($this->presets !== null) {
+            return $this->presets;
+        }
+
         $settings = $this->get_settings();
         $presets = array();
 
@@ -87,21 +89,21 @@ class RMDQRCodeGenerator {
             );
 
             if ($preset['type'] === 'link') {
-                $data['url'] = $preset['url'];
+                $data['url'] = esc_url_raw($this->expand_shortcodes($preset['url']));
             } elseif ($preset['type'] === 'text') {
-                $data['text-content'] = $preset['text'];
+                $data['text-content'] = $this->expand_shortcodes($preset['text']);
             } elseif ($preset['type'] === 'girocode') {
-                $data['giro-name'] = $preset['giro_name'];
-                $data['giro-iban'] = $preset['giro_iban'];
-                $data['giro-bic'] = $preset['giro_bic'];
-                $data['giro-amount'] = $preset['giro_amount'];
-                $data['giro-purpose'] = $preset['giro_purpose'];
+                $data['giro-name'] = $this->expand_shortcodes($preset['giro_name']);
+                $data['giro-iban'] = $this->normalize_iban($this->expand_shortcodes($preset['giro_iban']));
+                $data['giro-bic'] = $this->normalize_bic($this->expand_shortcodes($preset['giro_bic']));
+                $data['giro-amount'] = $this->normalize_amount($this->expand_shortcodes($preset['giro_amount']));
+                $data['giro-purpose'] = $this->expand_shortcodes($preset['giro_purpose']);
             } else {
-                $data['event-title'] = $preset['event_title'];
-                $data['event-location'] = $preset['event_location'];
+                $data['event-title'] = $this->expand_shortcodes($preset['event_title']);
+                $data['event-location'] = $this->expand_shortcodes($preset['event_location']);
                 $data['event-start'] = $preset['event_start'];
                 $data['event-end'] = $preset['event_end'];
-                $data['event-description'] = $preset['event_description'];
+                $data['event-description'] = $this->expand_shortcodes($preset['event_description']);
             }
 
             $presets[] = array(
@@ -113,6 +115,36 @@ class RMDQRCodeGenerator {
         }
 
         $this->presets = apply_filters('rmd_qr_presets', $presets);
+        return $this->presets;
+    }
+
+    private function contains_shortcode($value) {
+        return (bool) preg_match('/\[[A-Za-z0-9_-]+[^\]]*\]/', (string) $value);
+    }
+
+    /**
+     * Löst Shortcodes (z. B. [cgv iban]) auf und liefert reinen Text.
+     */
+    private function expand_shortcodes($value) {
+        if (!$this->contains_shortcode($value)) {
+            return $value;
+        }
+        $expanded = wp_strip_all_tags(do_shortcode($value));
+        return trim(html_entity_decode($expanded, ENT_QUOTES, 'UTF-8'));
+    }
+
+    /**
+     * Werte mit Shortcode werden unverändert gespeichert und erst bei der Anzeige aufgelöst und geprüft.
+     */
+    private function sanitize_preset_field($preset, $key, $callback, $multiline = false) {
+        if (!isset($preset[$key])) {
+            return '';
+        }
+        $value = $multiline ? sanitize_textarea_field($preset[$key]) : sanitize_text_field($preset[$key]);
+        if ($this->contains_shortcode($value)) {
+            return $value;
+        }
+        return call_user_func($callback, $value);
     }
 
     public function register_settings() {
@@ -155,21 +187,21 @@ class RMDQRCodeGenerator {
                     'type' => $type,
                     'label' => $label,
                     'active' => !empty($preset['active']),
-                    'url' => isset($preset['url']) ? esc_url_raw($preset['url']) : '',
-                    'text' => isset($preset['text']) ? substr(sanitize_textarea_field($preset['text']), 0, 500) : '',
-                    'event_title' => isset($preset['event_title']) ? sanitize_text_field($preset['event_title']) : '',
-                    'event_location' => isset($preset['event_location']) ? sanitize_text_field($preset['event_location']) : '',
+                    'url' => $this->sanitize_preset_field($preset, 'url', 'esc_url_raw'),
+                    'text' => $this->sanitize_preset_field($preset, 'text', function ($v) { return substr($v, 0, 500); }, true),
+                    'event_title' => $this->sanitize_preset_field($preset, 'event_title', 'strval'),
+                    'event_location' => $this->sanitize_preset_field($preset, 'event_location', 'strval'),
                     'event_start' => isset($preset['event_start']) ? $this->sanitize_datetime_local($preset['event_start']) : '',
                     'event_end' => isset($preset['event_end']) ? $this->sanitize_datetime_local($preset['event_end']) : '',
-                    'event_description' => isset($preset['event_description']) ? sanitize_textarea_field($preset['event_description']) : '',
-                    'giro_name' => isset($preset['giro_name']) ? substr(sanitize_text_field($preset['giro_name']), 0, 70) : '',
-                    'giro_iban' => isset($preset['giro_iban']) ? $this->normalize_iban($preset['giro_iban']) : '',
-                    'giro_bic' => isset($preset['giro_bic']) ? $this->normalize_bic($preset['giro_bic']) : '',
-                    'giro_amount' => isset($preset['giro_amount']) ? $this->normalize_amount($preset['giro_amount']) : '',
-                    'giro_purpose' => isset($preset['giro_purpose']) ? substr(sanitize_text_field($preset['giro_purpose']), 0, 140) : ''
+                    'event_description' => $this->sanitize_preset_field($preset, 'event_description', 'strval', true),
+                    'giro_name' => $this->sanitize_preset_field($preset, 'giro_name', function ($v) { return substr($v, 0, 70); }),
+                    'giro_iban' => $this->sanitize_preset_field($preset, 'giro_iban', array($this, 'normalize_iban')),
+                    'giro_bic' => $this->sanitize_preset_field($preset, 'giro_bic', array($this, 'normalize_bic')),
+                    'giro_amount' => $this->sanitize_preset_field($preset, 'giro_amount', array($this, 'normalize_amount')),
+                    'giro_purpose' => $this->sanitize_preset_field($preset, 'giro_purpose', function ($v) { return substr($v, 0, 140); })
                 );
 
-                if ($type === 'girocode' && $clean['giro_iban'] !== '' && !$this->is_valid_iban($clean['giro_iban'])) {
+                if ($type === 'girocode' && $clean['giro_iban'] !== '' && !$this->contains_shortcode($clean['giro_iban']) && !$this->is_valid_iban($clean['giro_iban'])) {
                     add_settings_error(RMD_QR_OPTION, 'invalid_iban', sprintf('Preset „%s“: Die IBAN ist ungültig.', $label));
                 }
 
@@ -257,6 +289,20 @@ class RMDQRCodeGenerator {
         }
     }
     
+    /**
+     * Mini-QR-Code als Menü-Icon; WordPress färbt das SVG passend zum Admin-Farbschema ein.
+     */
+    private function get_menu_icon() {
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path fill="black" fill-rule="evenodd" d="'
+            . 'M1 1h7v7H1zM2 2v5h5V2zM3 3h3v3H3z'
+            . 'M12 1h7v7h-7zM13 2v5h5V2zM14 3h3v3h-3z'
+            . 'M1 12h7v7H1zM2 13v5h5v-5zM3 14h3v3H3z'
+            . 'M9 1h2v2H9zM9 5h2v3H9zM1 9h3v2H1zM6 9h2v2H6zM9 9h2v2H9zM13 9h2v2h-2zM17 9h2v2h-2z'
+            . 'M9 13h2v2H9zM9 17h2v2H9zM12 12h2v2h-2zM17 12h2v2h-2zM14 14h3v2h-3zM12 16h2v3h-2zM16 17h3v2h-3z'
+            . '"/></svg>';
+        return 'data:image/svg+xml;base64,' . base64_encode($svg);
+    }
+
     public function add_admin_menu() {
         // Nur für berechtigte Benutzer das Menü hinzufügen
         if (!$this->user_can_use_qr_generator()) {
@@ -269,7 +315,7 @@ class RMDQRCodeGenerator {
             'read', // Minimale Berechtigung - weitere Prüfung erfolgt in user_can_use_qr_generator()
             'rmd-qr-code-generator',
             array($this, 'admin_page'),
-            'dashicons-grid-view',
+            $this->get_menu_icon(),
             30
         );
         
@@ -336,7 +382,7 @@ class RMDQRCodeGenerator {
             'nonce' => wp_create_nonce('qr_nonce'),
             'downloadUrl' => admin_url('admin.php'),
             'downloadNonce' => wp_create_nonce('download_nonce'),
-            'presets' => $this->presets
+            'presets' => $this->get_presets()
         ));
     }
     
@@ -572,14 +618,15 @@ class RMDQRCodeGenerator {
     }
     
     private function render_preset_buttons() {
-        if (empty($this->presets)) {
+        $presets = $this->get_presets();
+        if (empty($presets)) {
             return;
         }
         
         echo '<div class="preset-buttons">';
         echo '<h3>Schnell-Auswahl (Presets)</h3>';
         
-        foreach ($this->presets as $preset) {
+        foreach ($presets as $preset) {
             $disabled = isset($preset['disabled']) && $preset['disabled'] ? 'disabled="disabled"' : '';
             $data_attributes = '';
             
@@ -635,6 +682,7 @@ class RMDQRCodeGenerator {
         echo '<h3>Presets</h3>';
         echo '<div class="qr-section-content">';
         echo '<p class="description">Presets erscheinen als Schnell-Auswahl auf der Seite „Erstellen“ und füllen das Formular vor. Inaktive Presets werden ausgegraut angezeigt.</p>';
+        echo '<p class="description">Felder dürfen Shortcodes enthalten, z. B. <code>[cgv iban]</code>. Sie werden beim Öffnen der Seite „Erstellen“ aufgelöst. Datumsfelder unterstützen keine Shortcodes.</p>';
         echo '<div id="rmd-qr-presets">';
         foreach ($settings['presets'] as $index => $preset) {
             $this->render_preset_row($index, $preset);
@@ -695,7 +743,7 @@ class RMDQRCodeGenerator {
 
         echo '<tr class="rmd-qr-field-link">';
         echo '<th scope="row">URL</th>';
-        echo '<td><input type="url" class="regular-text" name="' . esc_attr($name) . '[url]" value="' . esc_attr($preset['url']) . '" placeholder="https://example.com"></td>';
+        echo '<td><input type="text" class="regular-text" name="' . esc_attr($name) . '[url]" value="' . esc_attr($preset['url']) . '" placeholder="https://example.com"></td>';
         echo '</tr>';
 
         echo '<tr class="rmd-qr-field-text">';

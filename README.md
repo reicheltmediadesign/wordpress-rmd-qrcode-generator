@@ -6,7 +6,7 @@ WordPress plugin to create QR codes in the admin area – for links, text, calen
 
 - **QR code types:** link/URL, free text, event (vCalendar) and Girocode (EPC QR code for SEPA transfers, IBAN checksum validated).
 - **PNG or SVG**, size 100–1000 px, custom foreground and background colours with a contrast warning.
-- **Presets:** quick-select buttons that fill the form, managed per site under *QR Generator → Settings*.
+- **Presets:** quick-select buttons that fill the form, managed per site under *QR Generator → Settings*. Preset fields may contain shortcodes (e.g. from a global variables plugin), resolved when the form is opened.
 - **Role access:** administrators always; further roles can be enabled in the settings.
 - **Clean-up page** to review and delete generated files by month.
 - Filters `rmd_qr_presets` and `rmd_qr_allowed_roles` for presets and roles from code.
@@ -15,8 +15,8 @@ The admin interface is in German.
 
 ## Installation
 
-1. Download the repository as a zip, or copy the folder to `wp-content/plugins/rmd-qrcode-generator`.
-2. Activate *QR Code Generator* under Plugins.
+1. Download `rmd-qrcode-generator.zip` from the latest [release](https://github.com/reicheltmediadesign/wordpress-rmd-qrcode-generator/releases). Do not use the “Source code” downloads – their folder name differs from the plugin's.
+2. In WordPress go to Plugins → Add New → Upload Plugin, choose the zip and activate *QR Code Generator*.
 3. Optional: set up roles and presets under *QR Generator → Settings*.
 
 ## Documentation
