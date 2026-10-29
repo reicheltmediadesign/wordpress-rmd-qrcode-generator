@@ -15,9 +15,11 @@ The admin interface is in German.
 
 ## Installation
 
-1. Download `rmd-qrcode-generator.zip` from the latest [release](https://github.com/reicheltmediadesign/wordpress-rmd-qrcode-generator/releases). Do not use the “Source code” downloads – their folder name differs from the plugin's.
-2. In WordPress go to Plugins → Add New → Upload Plugin, choose the zip and activate *QR Code Generator*.
+1. Download `rmd-qrcode-generator.zip` from the latest [release](https://github.com/reicheltmediadesign/wordpress-rmd-qrcode-generator/releases). Do not use the “Source code” downloads – they lack the update library and use a different folder name.
+2. In WordPress go to Plugins → Add New → Upload Plugin, choose the zip and activate *RMD QR Code Generator*.
 3. Optional: set up roles and presets under *QR Generator → Settings*.
+
+Later releases are offered under Dashboard → Updates like any other plugin.
 
 ## Documentation
 

@@ -1,0 +1,14 @@
+.git
+.github
+.gitignore
+.gitattributes
+.distignore
+.DS_Store
+.vscode
+.idea
+bin
+dist
+vendor
+composer.json
+composer.lock
+CHANGELOG.md
