@@ -1,0 +1,23 @@
+{
+  "name": "reicheltmediadesign/wordpress-rmd-qrcode-generator",
+  "description": "WordPress plugin to create QR codes (link, text, event, Girocode) with presets and role access.",
+  "type": "wordpress-plugin",
+  "license": "GPL-2.0-or-later",
+  "authors": [
+    {
+      "name": "Philipp Reichelt",
+      "email": "info@reicheltmedia.design",
+      "homepage": "https://reicheltmedia.design"
+    }
+  ],
+  "require": {
+    "php": ">=7.4",
+    "yahnis-elsts/plugin-update-checker": "^5.7"
+  },
+  "config": {
+    "sort-packages": true,
+    "platform": {
+      "php": "7.4.0"
+    }
+  }
+}

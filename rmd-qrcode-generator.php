@@ -1,11 +1,15 @@
 <?php
 /**
- * Plugin Name: QR Code Generator
+ * Plugin Name: RMD QR Code Generator
+ * Plugin URI: https://github.com/reicheltmediadesign/wordpress-rmd-qrcode-generator
  * Description: WordPress-Plugin zur Generierung von QR-Codes (Link, Text, Termin, Girocode) mit Presets und Rollensteuerung
- * Version: 1.5.0
+ * Version: 1.6.0
+ * Requires at least: 6.0
+ * Requires PHP: 7.4
  * Author: Philipp von reichelt media.design
  * Author URI: https://reicheltmedia.design
  * License: GPL-2.0-or-later
+ * Update URI: https://github.com/reicheltmediadesign/wordpress-rmd-qrcode-generator
  */
 
 if (!defined('ABSPATH')) {
@@ -13,10 +17,23 @@ if (!defined('ABSPATH')) {
 }
 
 // Plugin-Konstanten definieren
-define('RMD_QR_VERSION', '1.5.0');
+define('RMD_QR_VERSION', '1.6.0');
 define('RMD_QR_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('RMD_QR_PLUGIN_PATH', plugin_dir_path(__FILE__));
 define('RMD_QR_OPTION', 'rmd_qr_settings');
+
+// Automatische Updates aus GitHub-Releases. plugin-update-checker liegt nur im Release-Zip unter vendor/.
+// Statt der GitHub-API (Rate-Limit) wird die update.json gelesen, die der Release-Workflow anhängt.
+if (is_readable(RMD_QR_PLUGIN_PATH . 'vendor/autoload.php')) {
+    require RMD_QR_PLUGIN_PATH . 'vendor/autoload.php';
+    if (class_exists('\YahnisElsts\PluginUpdateChecker\v5\PucFactory')) {
+        \YahnisElsts\PluginUpdateChecker\v5\PucFactory::buildUpdateChecker(
+            'https://github.com/reicheltmediadesign/wordpress-rmd-qrcode-generator/releases/latest/download/update.json',
+            __FILE__,
+            'rmd-qrcode-generator'
+        );
+    }
+}
 
 class RMDQRCodeGenerator {
 
