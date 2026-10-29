@@ -1,0 +1,79 @@
+/* QR Code Generator Cleanup Styles */
+
+.cleanup-container {
+    margin-top: 20px;
+}
+
+.month-selector {
+    background: #fff;
+    border: 1px solid #ccd0d4;
+    border-radius: 6px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.month-selector h3 {
+    margin-top: 0;
+}
+
+.month-selector select {
+    min-width: 200px;
+}
+
+.cleanup-actions {
+    background: #fff;
+    border: 1px solid #ccd0d4;
+    border-radius: 6px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.cleanup-actions h3 {
+    margin-top: 0;
+}
+
+.action-buttons {
+    margin-top: 15px;
+}
+
+.action-buttons .button {
+    margin-right: 10px;
+}
+
+.qr-type-badge {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.qr-type-link {
+    background: #e1f5fe;
+    color: #0288d1;
+}
+
+.qr-type-text {
+    background: #f3e5f5;
+    color: #7b1fa2;
+}
+
+.qr-type-event {
+    background: #e8f5e8;
+    color: #388e3c;
+}
+
+.qr-type-girocode {
+    background: #fff3e0;
+    color: #e65100;
+}
+
+.no-files-message {
+    background: #fff;
+    border: 1px solid #ccd0d4;
+    border-radius: 6px;
+    padding: 40px;
+    text-align: center;
+    color: #666;
+}

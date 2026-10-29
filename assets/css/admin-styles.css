@@ -1,0 +1,215 @@
+/* QR Code Generator Admin Styles */
+
+.preset-buttons {
+    border: 1px solid #ccd0d4;
+    border-radius: 5px;
+    padding: 15px;
+    background: #f1f1f1;
+    margin-top: 20px;
+}
+
+.preset-btn {
+    margin-right: 10px !important;
+    margin-bottom: 5px;
+    padding: 1px 10px 3px 5px !important;
+}
+
+.error-message {
+    color: #d63638;
+    background: #fcf0f1;
+    border: 1px solid #d63638;
+    padding: 8px 12px;
+    border-radius: 4px;
+    margin: 5px 0;
+}
+
+.success-message {
+    color: #00a32a;
+    background: #f0f6fc;
+    border: 1px solid #00a32a;
+    padding: 8px 12px;
+    border-radius: 4px;
+    margin: 5px 0;
+}
+
+#qr_preview {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 20px;
+    background: #f9f9f9;
+    text-align: center;
+    margin-top: 20px;
+}
+
+.qr-type-section {
+    background: #fff;
+    border: 1px solid #ccd0d4;
+    border-radius: 6px;
+    margin: 20px 0;
+    box-shadow: 0 1px 1px rgba(0,0,0,.04);
+}
+
+.qr-type-section h3 {
+    margin: 0;
+    padding: 15px 20px;
+    background: #f6f7f7;
+    border-bottom: 1px solid #ccd0d4;
+    border-radius: 6px 6px 0 0;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.qr-type-badge {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-right: 8px;
+}
+
+.qr-type-link {
+    background: #e1f5fe;
+    color: #0288d1;
+}
+
+.qr-type-text {
+    background: #f3e5f5;
+    color: #7b1fa2;
+}
+
+.qr-type-event {
+    background: #e8f5e8;
+    color: #388e3c;
+}
+
+.qr-type-girocode {
+    background: #fff3e0;
+    color: #e65100;
+}
+
+.rmd-qr-preset-row {
+    border: 1px solid #dcdcde;
+    border-radius: 4px;
+    background: #f6f7f7;
+    padding: 0 15px;
+    margin: 15px 0;
+}
+
+.preset-btn[disabled] .qr-type-badge {
+    background: #eee;
+    color: #bbb;
+}
+
+.qr-section-content {
+    padding: 0 20px 10px 20px;
+}
+
+.qr-section-content .form-table {
+    margin-top: 0;
+}
+
+#size {
+    width: 300px;
+    margin-right: 10px;
+}
+
+#size_display {
+    font-weight: bold;
+    color: #2271b1;
+}
+
+.qr-generator-container {
+    display: flex;
+    gap: 30px;
+    margin-top: 20px;
+}
+
+.qr-settings-column {
+    flex: 1;
+    min-width: 0;
+}
+
+.qr-preview-column {
+    flex: 0 0 350px;
+    position: sticky;
+    top: 32px;
+    height: fit-content;
+}
+
+.qr-submit-section {
+    background: #fff;
+    border: 1px solid #ccd0d4;
+    border-radius: 6px;
+    margin: 20px 0;
+    box-shadow: 0 1px 1px rgba(0,0,0,.04);
+}
+
+.qr-submit-section h3 {
+    margin: 0;
+    padding: 15px 20px;
+    background: #f6f7f7;
+    border-bottom: 1px solid #ccd0d4;
+    border-radius: 6px 6px 0 0;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.qr-buttons-row {
+    padding: 15px 20px 10px 20px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.qr-buttons-row .button {
+    flex: 1;
+    min-width: 200px;
+}
+
+.qr-loading {
+    padding: 0 20px 15px 20px;
+    text-align: center;
+}
+
+.qr-download-section {
+    background: #fff;
+    border: 1px solid #ccd0d4;
+    border-radius: 6px;
+    padding: 20px;
+    margin-top: 20px;
+    text-align: center;
+}
+
+.qr-download-section .submit {
+    margin: 0;
+    padding: 0;
+}
+
+#qr_preview img {
+    max-width: 200px !important;
+    max-height: 200px !important;
+    width: auto !important;
+    height: auto !important;
+}
+
+#qr_preview svg {
+    max-width: 200px !important;
+    max-height: 200px !important;
+    width: auto !important;
+    height: auto !important;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .qr-generator-container {
+        flex-direction: column;
+    }
+    
+    .qr-preview-column {
+        flex: 1;
+        position: relative;
+        top: auto;
+    }
+}
